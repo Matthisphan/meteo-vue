@@ -34,9 +34,17 @@ const fetchCities = async () => {
 const onInput = () => {
   const query = search.value.toLowerCase()
   if (query.length > 0) {
-    filteredCities.value = allCities.value
-        .filter(city => city.name.toLowerCase().includes(query))
-        .slice(0, 10)
+    const exactMatches = allCities.value.filter(city =>
+      city.name.toLowerCase() === query
+    )
+
+    const partialMatches = allCities.value.filter(city =>
+      city.name.toLowerCase().includes(query) && city.name.toLowerCase() !== query
+    )
+
+    filteredCities.value = [...exactMatches, ...partialMatches]
+      .slice(0, 10)
+
     showDropdown.value = true
   } else {
     filteredCities.value = []
