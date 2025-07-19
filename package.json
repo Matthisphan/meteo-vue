@@ -20,6 +20,8 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.20",
+    "@types/node": "^24.0.14",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/tsconfig": "^0.7.0",
     "autoprefixer": "^10.4.21",

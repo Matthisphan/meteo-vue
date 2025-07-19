@@ -9,7 +9,7 @@ interface WeatherData {
   wind: { speed: number };
 }
 
-const props = defineProps<{ data: WeatherData | null }>();
+defineProps<{ data: WeatherData | null }>();
 
 function formatTime(unix: number) {
   const date = new Date(unix * 1000);
@@ -22,8 +22,8 @@ function formatTime(unix: number) {
 
 <template>
   <div v-if="data" class="max-w-sm bg-white rounded-lg shadow p-6 space-y-4">
-    <div class="flex items-center space-x-4">
-      <div class="bg-white/80 backdrop-blur-sm p-3 rounded-full drop-shadow-lg">
+    <div class="grid grid-cols-1 justify-items-center">
+      <div class="bg-white/80 backdrop-blur-sm p-3 rounded-full drop-shadow-lg max-w-1/2">
         <img
           :src="`https://openweathermap.org/img/wn/${data.weather[0].icon}@4x.png`"
           :alt="data.weather[0].description"

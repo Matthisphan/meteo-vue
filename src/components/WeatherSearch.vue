@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { useWeatherAPI } from "../composables/useWeatherAPI";
 import { useWeatherStore } from "../stores/weatherStore";
 
@@ -16,13 +16,35 @@ const filteredCities = ref<City[]>([]);
 const search = ref("");
 const showDropdown = ref(false);
 
-const error = computed(() => store.error);
+// Placeholder cycling
+const placeholders = [
+  "Rechercher une ville",
+  "Paris",
+  "Tokyo",
+  "New York",
+  "Londres",
+  "Mumbai",
+];
+const placeholder = ref(placeholders[0]);
+let placeholderIndex = 0;
+let intervalId: number;
 
 onMounted(() => {
   store.setWeatherData(null);
   store.setError("");
   fetchCities();
   document.addEventListener("click", handleClickOutside);
+
+  // Start cycling placeholder text
+  intervalId = setInterval(() => {
+    placeholderIndex = (placeholderIndex + 1) % placeholders.length;
+    placeholder.value = placeholders[placeholderIndex];
+  }, 3000); // every 3 seconds
+});
+
+onUnmounted(() => {
+  document.removeEventListener("click", handleClickOutside);
+  clearInterval(intervalId);
 });
 
 const fetchCities = async () => {
@@ -35,13 +57,13 @@ const onInput = () => {
   const query = search.value.toLowerCase();
   if (query.length > 0) {
     const exactMatches = allCities.value.filter(
-      (city) => city.name.toLowerCase() === query
+        (city) => city.name.toLowerCase() === query
     );
 
     const partialMatches = allCities.value.filter(
-      (city) =>
-        city.name.toLowerCase().includes(query) &&
-        city.name.toLowerCase() !== query
+        (city) =>
+            city.name.toLowerCase().includes(query) &&
+            city.name.toLowerCase() !== query
     );
 
     filteredCities.value = [...exactMatches, ...partialMatches].slice(0, 10);
@@ -66,7 +88,7 @@ const handleKeydown = async (event: KeyboardEvent) => {
     const inputCity = search.value.trim().toLowerCase();
 
     const matchedCity = allCities.value.find(
-      (city) => `${city.name}, ${city.country}`.toLowerCase() === inputCity
+        (city) => `${city.name}, ${city.country}`.toLowerCase() === inputCity
     );
 
     if (matchedCity) {
@@ -87,14 +109,15 @@ const handleClickOutside = (event: MouseEvent) => {
 };
 </script>
 
+
 <template>
-  <div id="search-wrapper" class="relative w-full max-w-md mx-auto mt-8 z-50">
+  <div id="search-wrapper" class="relative w-full max-w-lg mx-auto my-8 z-50 md:scale-120">
     <input
-      v-model="search"
-      @input="onInput"
-      @keydown="handleKeydown"
-      placeholder="Rechercher une ville"
-      class="w-full border px-4 py-2 rounded"
+        v-model="search"
+        :placeholder="placeholder"
+        @input="onInput"
+        @keydown="handleKeydown"
+        class="w-full px-4 py-2 rounded outline-5 outline-blue-200 ring-10 focus:outline-none ring-blue-100 focus:ring-4 focus:ring-blue-500 transition bg-indigo-100 shadow-inner"
     />
 
     <ul
@@ -110,7 +133,5 @@ const handleClickOutside = (event: MouseEvent) => {
         {{ city.name }}, {{ city.country }}
       </li>
     </ul>
-
-    <div v-if="error" class="mt-4 text-red-500 text-center">{{ error }}</div>
   </div>
 </template>

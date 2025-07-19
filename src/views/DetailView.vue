@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from "vue";
+import { useWeatherGradient } from "../composables/useWeatherGradient.ts";
 import { useRoute, useRouter } from "vue-router";
 import { useWeatherAPI } from "../composables/useWeatherAPI";
 import { useWeatherStore } from "../stores/weatherStore";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 
+const { gradientStyle } = useWeatherGradient();
 const route = useRoute();
 const router = useRouter();
 const { fetchWeather, fetchForecast } = useWeatherAPI();
 const weatherStore = useWeatherStore();
+console.log("Weather Store:", weatherStore);
 const selectedView = ref("Température");
 const viewOptions = ["Température", "Humidité", "Pression", "Vent"];
 let chartInstance: Chart | null = null;
@@ -18,11 +21,11 @@ const getChartData = () => {
   if (!weatherStore.forecastData) return { labels: [], data: [], unit: "" };
   const today = new Date();
   const points = weatherStore.forecastData.list
-    .filter((item) => {
+    .filter((item: any) => {
       const d = new Date(item.dt * 1000);
       return d.getDate() === today.getDate();
     })
-    .map((item) => ({
+    .map((item: any) => ({
       time: new Date(item.dt * 1000).toLocaleTimeString("fr-FR", {
         hour: "2-digit",
         minute: "2-digit",
@@ -36,22 +39,22 @@ const getChartData = () => {
   let unit: string;
   switch (selectedView.value) {
     case "Humidité":
-      data = points.map((p) => p.humidity);
+      data = points.map((p: any) => p.humidity);
       unit = "%";
       break;
     case "Pression":
-      data = points.map((p) => p.pressure);
+      data = points.map((p: any) => p.pressure);
       unit = "hPa";
       break;
     case "Vent":
-      data = points.map((p) => p.wind);
+      data = points.map((p: any) => p.wind);
       unit = "m/s";
       break;
     default:
-      data = points.map((p) => p.temp);
+      data = points.map((p: any) => p.temp);
       unit = "°C";
   }
-  return { labels: points.map((p) => p.time), data, unit };
+  return { labels: points.map((p: any) => p.time), data, unit };
 };
 
 const renderChart = () => {
@@ -100,6 +103,7 @@ watch([selectedView, () => weatherStore.forecastData], async () => {
 <template>
   <div
     class="min-h-screen bg-gradient-to-br from-indigo-50 to-indigo-100 flex flex-col items-center py-8 px-4"
+    :style="{ background: gradientStyle }"
   >
     <button
       @click="router.back()"
@@ -140,6 +144,7 @@ watch([selectedView, () => weatherStore.forecastData], async () => {
             ? 'bg-indigo-600 text-white shadow-lg'
             : 'bg-white text-gray-700 hover:bg-indigo-50',
         ]"
+        :title="view"
       >
         <span
           class="p-2 rounded-full"
@@ -262,7 +267,6 @@ watch([selectedView, () => weatherStore.forecastData], async () => {
             </svg>
           </svg>
         </span>
-        {{ view }}
       </button>
     </div>
 
